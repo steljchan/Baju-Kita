@@ -4,11 +4,9 @@ import os
 import re
 
 USER_FILE = "users.txt"
-GOOGLE_ACCOUNTS = [
-    {"username": "google_user1", "account_type": "customer"},
-    {"username": "google_user2", "account_type": "seller"},
-    {"username": "google_user3", "account_type": "customer"}
-]
+GOOGLE_ACCOUNTS = [{"username": "google_user1", "account_type": "customer"},
+                   {"username": "google_user2", "account_type": "seller"},
+                   {"username": "google_user3", "account_type": "customer"}]
 
 class App(tk.Tk):
     def __init__(self):
@@ -17,7 +15,7 @@ class App(tk.Tk):
         self.geometry("400x400")
 
         # Nama Aplikasi
-        self.label_title = tk.Label(self, text="Baju Kita", font=("Helvetica", 20))
+        self.label_title = tk.Label(self, text="BajuKita", font=("Helvetica", 20))
         self.label_title.pack(pady=10)
 
         # Input username dan password
@@ -151,7 +149,7 @@ class App(tk.Tk):
         self.clear_widgets()
 
         self.label_title.pack(pady=10)
-        self.label_select_account = tk.Label(self, text="Pilih Akun Google", font=("Helvetica", 20))
+        self.label_select_account = tk.Label(self, text="Pilih Akun Google", font=("Helvetica", 15))
         self.label_select_account.pack(pady=10)
 
         self.google_account_var = tk.StringVar(value=GOOGLE_ACCOUNTS[0]["username"])
@@ -171,12 +169,12 @@ class App(tk.Tk):
     def show_homepage(self, username, account_type):
         self.clear_widgets()
         self.label_title.pack(pady=10)
-        self.label_welcome = tk.Label(self, text=f"Selamat datang, {username}!", font=("Helvetica", 20))
+        self.label_welcome = tk.Label(self, text=f"Selamat datang, {username}!", font=("Helvetica", 15))
         self.label_welcome.pack(pady=10)
         tk.Button(self, text="Keluar", width=15, command=self.logout).pack(pady=5)
 
     def logout(self):
-    # Clear username and password
+    # Clear username dan password
         self.entry_username.delete(0, tk.END)
         self.entry_password.delete(0, tk.END)
 
