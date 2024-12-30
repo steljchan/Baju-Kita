@@ -1,0 +1,2 @@
+{'nama': 'akljdlaksjd', 'tempat': 'dkfsfd', 'organisasi': 'sdljfgw', 'tipe': 'donasi', 'deskripsi': 'mcakj', 'creator': 'Britney'}
+{'nama': 'adhasd', 'tempat': 'akshdka', 'organisasi': 'lasdja', 'tipe': 'donasi', 'deskripsi': 'aklsdha', 'creator': 'Britney'}

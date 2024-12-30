@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 import os
 import re
+import Homepage
 
 USER_FILE = "users.txt"
 GOOGLE_ACCOUNTS = [{"username": "google_user1", "account_type": "customer"},
@@ -167,11 +168,11 @@ class App(tk.Tk):
                 return
 
     def show_homepage(self, username, account_type):
-        self.clear_widgets()
-        self.label_title.pack(pady=10)
+        self.clear_widgets() 
+        self.label_title.pack(pady=10) 
         self.label_welcome = tk.Label(self, text=f"Selamat datang, {username}!", font=("Helvetica", 15))
         self.label_welcome.pack(pady=10)
-        tk.Button(self, text="Keluar", width=15, command=self.logout).pack(pady=5)
+        self.after(1000, lambda: self.homepage(username, account_type))
 
     def logout(self):
     # Clear username dan password
@@ -195,6 +196,10 @@ class App(tk.Tk):
 
     def on_exit(self):
         self.destroy()
+    
+    def homepage(self, username, account_type):
+        self.destroy()
+        Homepage.Homepage(username, account_type).mainloop()
 
 if __name__ == "__main__":
     app = App()
