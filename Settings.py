@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import simpledialog, messagebox
-import List_Alamat
+import List_Alamat 
 import Profile
 import os
 
@@ -24,13 +24,17 @@ class settings(tk.Tk):
                 'donasi': [],
                 'basket_count': 0,
                 'donasi_count': 0,
+                "kelamin": "",
                 'organisasi': "",
                 'No. Tlp': "",
+                "email": "",
                 'alamat': []  
             }
         self.user_info = user_data[username]
+        self.kelamin = self.user_info['kelamin']
         self.organisasi = self.user_info['organisasi']
         self.tlp = self.user_info['No. Tlp']
+        self.email = self.user_info['email']
         self.alamat = self.user_info['alamat']
         
         self.update_button = tk.Button(self, text="Edit Info", font=("Arial", 12), bg="#4caf50", fg="white", command=self.update_info)
@@ -44,86 +48,115 @@ class settings(tk.Tk):
         
         self.back_button = tk.Button(self, text="Kembali", font=("Arial", 12), bg="#9e9e9e", fg="white", command=self.back_to_profile)
         self.back_button.pack(pady=10)
+        
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
     
     def update_info(self):
-        new_organisasi = simpledialog.askstring("Input", "Masukkan Organisasi/Toko baru:", initialvalue=self.organisasi)
+        new_kelamin = simpledialog.askstring("Input", "Masukkan jenis kelamin:", initialvalue=self.kelamin)
+        if self.account_type == "seller":
+            new_organisasi = simpledialog.askstring("Input", "Masukkan Organisasi/Toko baru:", initialvalue=self.organisasi)
+        else:
+            new_organisasi = "kosong" 
         new_tlp = simpledialog.askstring("Input", "Masukkan No. Tlp baru:", initialvalue=self.tlp)
+        new_email = simpledialog.askstring("Input", "Masukkan Email baru:", initialvalue=self.email)
         
         if new_tlp:
             self.tlp = new_tlp
-            self.user_info['No. Tlp'] = new_tlp
-        if new_organisasi:
+        if new_organisasi and self.account_type == "seller":  
             self.organisasi = new_organisasi
-            self.user_info['organisasi'] = new_organisasi
+        if new_email:
+            self.email = new_email
+        if new_kelamin:
+            self.kelamin = new_kelamin
         
-        self.update_profile_info()
+        self.user_info.update({
+            'No. Tlp': self.tlp,
+            'organisasi': self.organisasi,
+            'email': self.email,
+            'kelamin': self.kelamin,
+        })
+        user_data[self.username] = self.user_info
+        
         self.save_user_data()
-        messagebox.showinfo("Profile Updated", "Your profile has been successfully updated!")
-    
-    def update_profile_info(self):
-        self.organisasi_label.config(text=f"Organisasi/Toko: {self.organisasi}")
-        self.tlp_label.config(text=f"No. Tlp: {self.tlp}")
+        messagebox.showinfo("Profil diperbarui", "Profil anda sudah diperbarui!")
     
     def list_alamat(self):
         self.withdraw() 
         alamat_window = List_Alamat.Alamat(self.username, self.account_type, self.alamat)
         alamat_window.protocol("WM_DELETE_WINDOW", self.on_alamat_window_close)
         alamat_window.mainloop()
-
+    
     def on_alamat_window_close(self):
-        self.deiconify()  
+        self.deiconify()
         self.update_profile_info()
     
     def save_user_data(self):
-        global user_data
-        with open(user_data_file, "w") as file:
+        with open(user_data_file, "w") as f:
             for username, data in user_data.items():
-                basket_count = data['basket_count']
-                donasi_count = data['donasi_count']
-                organisasi = data['organisasi']
-                tlp = data['No. Tlp']
-                alamat = ";".join(data['alamat']) 
-                file.write(f"{username},{basket_count},{donasi_count},{organisasi},{tlp},{alamat}\n")
+                basket_count = data.get('basket_count', 0)
+                donasi_count = data.get('donasi_count', 0)
+                kelamin = data.get('kelamin', "")
+                organisasi = data.get('organisasi', "")
+                tlp = data.get('No. Tlp', "")
+                email = data.get('email', "")
+                alamat = ";".join(data.get('alamat', []))
+                f.write(f"{username},{basket_count},{donasi_count},{kelamin},{organisasi},{tlp},{email},{alamat}\n")
     
     def logout(self):
-        self.destroy()
-        messagebox.showinfo("Logged Out", "You have successfully logged out!")
+        self.save_user_data()  
+        self.destroy() 
+        from Login import App
+        app = App()  
+        app.mainloop()  
     
     def back_to_profile(self):
-        self.destroy() 
+        self.save_user_data()
+        self.destroy()
         Profile.profile(self.username, self.account_type).mainloop()
-
+    
     def ensure_file_exists(self):
         if not os.path.exists(user_data_file):
             with open(user_data_file, "w"):
-                pass  # Create an empty user data file if it doesn't exist
-
+                pass
+    
     def load_user_data(self):
         global user_data
+        user_data.clear()
         if os.path.exists(user_data_file):
             with open(user_data_file, "r") as file:
                 for line in file:
                     try:
                         parts = line.strip().split(',')
                         if len(parts) < 6:
-                            continue  
+                            continue
                         username = parts[0]
                         basket_count = int(parts[1])
                         donasi_count = int(parts[2])
-                        organisasi = parts[3]
-                        tlp = parts[4]
-                        alamat = parts[5].split(';') if parts[5] else []  
+                        kelamin = parts[3]
+                        organisasi = parts[4]
+                        tlp = parts[5]
+                        email = parts[6]
+                        alamat = parts[7].split(';') if len(parts) > 7 and parts[7] else []
                         user_data[username] = {
                             'basket': [],
                             'donasi': [],
                             'basket_count': basket_count,
                             'donasi_count': donasi_count,
+                            'kelamin': kelamin,
                             'organisasi': organisasi,
                             'No. Tlp': tlp,
+                            'email': email,
                             'alamat': alamat
                         }
                     except Exception as e:
                         print(f"Error processing line: {line}. Error: {e}")
+        else:
+            print(f"File {user_data_file} not found. Initializing empty user data.")
+    
+    def on_closing(self):
+        self.save_user_data()
+        self.destroy()
+
 
 if __name__ == "__main__":
     app = settings(username="Seller1", account_type="seller")
