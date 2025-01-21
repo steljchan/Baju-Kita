@@ -3,6 +3,9 @@ from tkinter import simpledialog, messagebox
 import Settings
 import Homepage
 import Postingan
+import SearchBar
+from DonationPageSeller import DonationPageSell
+from DonationPageCustomer import DonationPageCus 
 import os
 
 posts_file = "posts.txt"
@@ -62,7 +65,38 @@ class profile(tk.Tk):
         
         self.homepage_button = tk.Button(self, text="Homepage", font=("Arial", 12), bg="#4caf50", fg="white", command=self.homepage)
         self.homepage_button.pack(pady=10)
-    
+
+        # Add bottom navigation bar with four buttons
+        self.nav_bar = tk.Frame(self, bg="#dddddd", height=50)
+        self.nav_bar.pack(side=tk.BOTTOM, fill=tk.X)
+
+        # Button for Homepage
+        home_button = tk.Button(self.nav_bar, text="Homepage", font=("Arial", 12), bg="#007BFF", fg="white", command=self.homepage)
+        home_button.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+
+        # Button for Search Page
+        search_button = tk.Button(self.nav_bar, text="Search Page", font=("Arial", 12), bg="#6c757d", fg="white", command=self.search_page)
+        search_button.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+
+        # Button for Donation Page
+        donation_button = tk.Button(self.nav_bar, text="Donation Page", font=("Arial", 12), bg="#28a745", fg="white", command=self.donation_page)
+        donation_button.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+
+        # Button for Profile Page (disable when on Profile)
+        profile_button = tk.Button(self.nav_bar, text="Profile", font=("Arial", 12), bg="#ffc107", fg="white", command=self.profile_page)
+        profile_button.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+
+    def search_page(self):
+        # Navigate to Search Page
+        pass
+
+    def donation_page(self):
+        # Navigate to Donation Page
+        pass
+
+    def profile_page(self):
+        messagebox.showinfo("Profile Page", "You are already on the Profile Page.")
+
     def update_info(self):
         new_kelamin = simpledialog.askstring("Input", "Masukkan jenis kelamin baru:", initialvalue=self.kelamin)
         new_organisasi = simpledialog.askstring("Input", "Masukkan Organisasi/Toko baru:", initialvalue=self.organisasi)
@@ -86,14 +120,14 @@ class profile(tk.Tk):
         self.tlp_label.config(text=f"email: {self.email}")
         self.save_user_data()
         messagebox.showinfo("Profile Updated", "Your profile has been successfully updated!")
-    
+
     def riwayat(self):
         pass
     
     def pesanan(self):
         pass
     
-    def orderan():
+    def orderan(self):
         pass
     
     def postingan(self):
@@ -119,6 +153,25 @@ class profile(tk.Tk):
     def homepage(self):
         self.destroy()
         Homepage.Homepage(self.username, self.account_type).mainloop()
+
+    def donasi(self):
+        """Navigate to the donation page based on account type."""
+        self.destroy()  # Close the current homepage window
+        if self.account_type.lower() == "penjual":
+            self.destroy
+            seller_donation_page = DonationPageSell(self.username, self.account_type)   
+            seller_donation_page.mainloop()
+        elif self.account_type.lower() == "customer":
+            self.destroy
+            customer_donation_page = DonationPageCus(self.username, self.account_type)  # Pass username and account type
+            customer_donation_page.mainloop()  # Start customer donation page window
+        else:
+            messagebox.showinfo("Donasi", "Halaman donasi hanya tersedia untuk penjual atau pelanggan.")
+
+    def go_to_searchpage(self):
+        self.destroy()
+        search_app = SearchBar.SearchPage(username=self.username, account_type=self.account_type)
+        search_app.mainloop()
     
     def ensure_file_exists(self):
         if not os.path.exists(posts_file):

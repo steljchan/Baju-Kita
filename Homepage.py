@@ -4,6 +4,10 @@ from tkinter import simpledialog, messagebox
 import os
 import Profile
 import Keranjang
+import SearchBar
+from ChatFitur import ChatApp
+from DonationPageSeller import DonationPageSell
+from DonationPageCustomer import DonationPageCus  
 
 posts_file = "posts.txt"
 user_data_file = "user_data.txt"
@@ -40,6 +44,9 @@ class Homepage(tk.Tk):
         
         self.button_frame = tk.Frame(self, bg="#f4f4f4")
         self.button_frame.pack(pady=20)
+
+        self.chat_button = tk.Button(self.button_frame, text="Chat", font=("Arial", 14), bg="#007BFF", fg="white", command=self.open_chat)
+        self.chat_button.grid(row=0, column=2, padx=10)
         
         self.basket_button = tk.Button(self, text="Basket", font=("Arial", 14), bg="#ff6f61", fg="white", command=lambda: self.basket(self.username, self.account_type))
         self.basket_button.place(x=680, y=20) 
@@ -50,9 +57,6 @@ class Homepage(tk.Tk):
                 y=20
             )
         )
-        
-        self.donasi_button = tk.Button(self.button_frame, text="Donasi", font=("Arial", 14), bg="#D5006D", fg="white", command=self.donasi)
-        self.donasi_button.grid(row=0, column=1, padx=10)
         
         self.posts_label = tk.Label(self, text="Post Terbaru:", font=("Arial", 14, "bold"), bg="#f4f4f4", fg="#333")
         self.posts_label.pack(pady=10)
@@ -71,13 +75,26 @@ class Homepage(tk.Tk):
         
         self.add_to_basket_button = tk.Button(self.post_frame, text="Tambahkan ke Basket", font=("Arial", 12), bg="#2196f3", fg="white", command=self.tambahkan_dalam_basket)
         self.add_to_basket_button.grid(row=0, column=1, padx=10)
-        
-        self.add_to_donasi_button = tk.Button(self.post_frame, text="Tambahkan ke Donasi", font=("Arial", 12), bg="#8bc34a", fg="white", command=self.tambahkan_isi_donasi)
-        self.add_to_donasi_button.grid(row=0, column=2, padx=10)
-        
-        self.profil_button = tk.Button(self.post_frame, text="Profil", font=("Arial", 12), bg="#8bc34a", fg="white", command=lambda: self.profile(self.username, self.account_type))
-        self.profil_button.grid(row=0, column=3, padx=10)
-        
+            
+        self.ensure_file_exists()
+        self.load_thrift_posts()
+
+        # Bottom Navigation Bar
+        self.nav_bar = tk.Frame(self, bg="#dddddd", height=50)
+        self.nav_bar.pack(side=tk.BOTTOM, fill=tk.X)
+
+        self.home_button = tk.Button(self.nav_bar, text="Homepage", font=("Arial", 12), bg="#007BFF", fg="white", command=self.go_to_homepage)
+        self.home_button.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+
+        self.search_button = tk.Button(self.nav_bar, text="Searchpage", font=("Arial", 12), bg="#6c757d", fg="white", command=self.go_to_searchpage)
+        self.search_button.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+
+        self.donation_button = tk.Button(self.nav_bar, text="Donation Page", font=("Arial", 12), bg="#28a745", fg="white", command=self.donasi)
+        self.donation_button.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+
+        self.profile_button = tk.Button(self.nav_bar, text="Profile", font=("Arial", 12), bg="#ffc107", fg="white", command=lambda: self.profile(self.username, self.account_type))
+        self.profile_button.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+
         self.ensure_file_exists() 
         self.load_thrift_posts() 
     
@@ -136,9 +153,6 @@ class Homepage(tk.Tk):
     def basket(self, username, account_type):
         self.destroy()
         Keranjang.basket(username, account_type).mainloop()
-    
-    def donasi(self, username, account_type):
-        pass
     
     def view_post(self):
         try:
@@ -268,9 +282,36 @@ class Homepage(tk.Tk):
         except Exception as e:
             print(f"Error saving to {file_name}: {e}")
     
+    def go_to_homepage(self):
+        messagebox.showinfo("Navigasi", "Anda sudah berada di Homepage.")
+
+    def go_to_searchpage(self):
+        self.destroy()  # Close the current Homepage
+        app = SearchBar.SearchPage(username=self.username, account_type=self.account_type)  # Pass relevant info
+        app.mainloop()
+
+    def donasi(self):
+        """Navigate to the donation page based on account type."""
+        self.destroy()  # Close the current homepage window
+        if self.account_type.lower() == "penjual":
+            self.destroy
+            seller_donation_page = DonationPageSell(self.username, self.account_type)   
+            seller_donation_page.mainloop()
+        elif self.account_type.lower() == "customer":
+            self.destroy
+            customer_donation_page = DonationPageCus(self.username, self.account_type)  # Pass username and account type
+            customer_donation_page.mainloop()  # Start customer donation page window
+        else:
+            messagebox.showinfo("Donasi", "Halaman donasi hanya tersedia untuk penjual atau pelanggan.")
+
     def profile(self, username, account_type):
         self.destroy()
         Profile.profile(username, account_type).mainloop()
+        
+    def open_chat(self):
+        self.destroy()  
+        chat_window = ChatApp(self.username, self.account_type)
+        chat_window.mainloop()
 
 if __name__ == "__main__":
     app = Homepage(username="Seller1", account_type="penjual")

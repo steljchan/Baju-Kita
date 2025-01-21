@@ -19,6 +19,7 @@ class pembayaran(tk.Tk):
         self.load_user_data()
         self.username = username
         self.account_type = account_type
+        self.payment_method = None
         if username not in user_data:
             user_data[username] = {
                 'basket': [],
@@ -49,18 +50,27 @@ class pembayaran(tk.Tk):
         self.pengiriman_button = tk.Button(self, text="Pilih Metode Pengiriman", font=("Arial", 12), bg="#4caf50", fg="white", command=self.pengiriman)
         self.pengiriman_button.pack(pady=10)
         
+        self.payment_label = tk.Label(self, text="Metode Pembayaran: Belum dipilih", font=("Arial", 18, "bold"), bg="#f4f4f4", fg="#333")
+        self.payment_label.pack(pady=20)
+        
+        self.payment_button = tk.Button(self, text="Pilih Metode Pembayaran", font=("Arial", 12), bg="#4caf50", fg="white", command=self.select_payment_method)
+        self.payment_button.pack(pady=10)
+
         self.pembayaran_button = tk.Button(self, text="Lanjut Pembayaran", font=("Arial", 12), bg="#4caf50", fg="white", command=self.pembayaran)
-        self.pembayaran_button.pack(pady=10)
+        self.pembayaran_button.pack(pady=10) 
+
+        self.bayar_button = tk.Button(self, text="Bayar", font=("Arial", 12), bg="#4caf50", fg="white", command=self.bayar)
+        self.bayar_button.pack(pady=10)
         
         self.cancel_button = tk.Button(self, text="Batal", font=("Arial", 12), bg="#4caf50", fg="white", command=self.homepage)
         self.cancel_button.pack(pady=10)
         
         self.load_basket()
-        
+
     def ensure_file_exists(self):
         if not os.path.exists(basket_file):
             open(basket_file, "w").close()
-    
+
     def load_user_data(self):
         global user_data
         if os.path.exists(user_data_file):
@@ -92,10 +102,10 @@ class pembayaran(tk.Tk):
                         }
                     except Exception as e:
                         print(f"Error processing line: {line}. Error: {e}")
-    
+
     def get_main_alamat(self):
         return self.alamat[0] if self.alamat else "Belum ada alamat"
-    
+
     def alamat_pengiriman(self):
         def update_main_alamat():
             selected = listbox.curselection()
@@ -127,7 +137,7 @@ class pembayaran(tk.Tk):
         
         select_button = tk.Button(window, text="Pilih Alamat", font=("Arial", 12), bg="#4caf50", fg="white", command=update_main_alamat)
         select_button.pack(pady=5)
-    
+
     def load_basket(self):
         self.basket_list.delete(0, tk.END)
         if os.path.exists(basket_file):
@@ -145,10 +155,10 @@ class pembayaran(tk.Tk):
                                 print(f"Error parsing basket item: {line.strip()} ({e})")
             except Exception as e:
                 print(f"Error reading {basket_file}: {e}")
-    
+
     def get_pengiriman(self):
         return "Belum ada metode"
-    
+
     def pengiriman(self):
         def select_pengiriman():
             selected_method = method_var.get()
@@ -169,16 +179,77 @@ class pembayaran(tk.Tk):
         
         select_button = tk.Button(window, text="Pilih Metode", font=("Arial", 12), bg="#4caf50", fg="white", command=select_pengiriman)
         select_button.pack(pady=10)
+
+    def select_payment_method(self):
+        def set_payment_method():
+            selected_method = method_var.get()
+            if selected_method:
+                self.payment_method = selected_method
+                self.payment_label.config(text=f"Metode Pembayaran: {selected_method}")
+                payment_window.destroy()  # Close the dialog and return to the main page
+            else:
+                messagebox.showwarning("Peringatan", "Pilih metode pembayaran terlebih dahulu!")
+
+        payment_window = tk.Toplevel(self)
+        payment_window.title("Pilih Metode Pembayaran")
+        payment_window.geometry("400x400")
+        method_var = tk.StringVar(value="")
+
+        tk.Label(payment_window, text="Pilih Metode Pembayaran", font=("Arial", 14, "bold"), bg="#f4f4f4", fg="#333").pack(pady=10)
+
+        # E-Wallet Section
+        for method in ["Gopay", "Dana", "Ovo"]:
+            tk.Radiobutton(payment_window, text=method, variable=method_var, value=method, font=("Arial", 12), bg="#f4f4f4", fg="#333").pack(pady=5)
+
+        # Tunai Section
+        tk.Label(payment_window, text="Tunai", font=("Arial", 14, "bold"), bg="#f4f4f4", fg="#333").pack(pady=10)
+        tk.Radiobutton(payment_window, text="Cash On Delivery", variable=method_var, value="Cash On Delivery", font=("Arial", 12), bg="#f4f4f4", fg="#333").pack(pady=5)
+
+        # Virtual Account Section
+        for method in ["BCA", "Mandiri", "BRI", "BNI"]:
+            tk.Radiobutton(payment_window, text=method, variable=method_var, value=method, font=("Arial", 12), bg="#f4f4f4", fg="#333").pack(pady=5)
+
+        select_button = tk.Button(payment_window, text="Pilih Metode", font=("Arial", 12), bg="#4caf50", fg="white", command=set_payment_method)
+        select_button.pack(pady=10)
+
+
+    def bayar(self):
+        if not self.payment_method:
+            messagebox.showwarning("Peringatan", "Metode pembayaran belum dipilih!")
+            return
+
+        # Confirmation dialog
+        confirm = messagebox.askokcancel("Konfirmasi Pembayaran", "Apakah Anda yakin ingin melanjutkan pembayaran?")
+        if confirm:
+            # Show the thank-you message
+            messagebox.showinfo("Pembayaran", "Terima kasih sudah berbelanja! Paket kamu akan segera diproses.")
+            self.homepage()
+
     
-    def pembayaran(self):
+    def homepage(self):
+        self.destroy()
+        Homepage.Homepage(self.username, self.account_type).mainloop()
+
+    def bayar(self):
+        if not self.payment_method:
+            messagebox.showwarning("Peringatan", "Metode pembayaran belum dipilih!")
+            return
+
         main_address = self.get_main_alamat()
         if main_address == "Belum ada alamat":
             messagebox.showwarning("Peringatan", "Alamat belum dipilih!")
             return
+
         pengiriman_method = self.pengiriman_label.cget("text").replace("Metode Pengiriman: ", "")
         if pengiriman_method == "Belum ada metode":
             messagebox.showwarning("Peringatan", "Metode pengiriman belum dipilih!")
             return
+
+        basket_items = self.basket_list.get(0, tk.END)
+        if not basket_items:
+            messagebox.showwarning("Peringatan", "Keranjang belanja kosong!")
+            return
+
         shipping_costs = {
             "Reguler": 7000,
             "Express": 20000,
@@ -186,33 +257,24 @@ class pembayaran(tk.Tk):
             "Pick Up": 0
         }
         shipping_cost = shipping_costs.get(pengiriman_method, 0)
-        basket_items = self.basket_list.get(0, tk.END)
-        if not basket_items:
-            messagebox.showwarning("Peringatan", "Keranjang belanja kosong!")
-            return
-        total_price = 0
-        try:
-            with open(orderan_file, "a") as file:
-                for item_display in basket_items:
-                    try:
-                        nama, creator, harga = item_display.split(" - ")
-                        harga = int(harga.replace(".", "").replace(",", ""))  
-                        file.write(f"{self.username},{nama},{creator},{harga},{main_address},{pengiriman_method},belum dibayar\n")
-                        total_price += harga
-                    except ValueError:
-                        messagebox.showerror("Error", f"Format keranjang tidak valid: {item_display}")
-                        continue
-            total_price += shipping_cost
-            messagebox.showinfo("Sukses", f"Pesanan telah disimpan dengan status 'belum dibayar'. Total harga: Rp{total_price:,}")
-            self.basket_list.delete(0, tk.END)
-            self.user_info['basket_count'] = 0
-            self.save_user_data()
-            with open(basket_file, "w") as f:
-                pass
-            self.open_payment_window(total_price)
-        except Exception as e:
-            messagebox.showerror("Error", f"Gagal menyimpan pesanan: {e}")
-    
+
+        total_item_cost = 0
+        for item_display in basket_items:
+            try:
+                _, _, harga = item_display.split(" - ")
+                total_item_cost += int(harga.replace(".", "").replace(",", ""))
+            except ValueError:
+                messagebox.showerror("Error", f"Format keranjang tidak valid: {item_display}")
+                return
+
+        self.total_price = total_item_cost + shipping_cost
+        self.total_label.config(text=f"Total: Rp{self.total_price:,}")
+
+        confirm = messagebox.askokcancel("Konfirmasi Pembayaran", f"Total pembayaran: Rp{self.total_price:,}. Lanjutkan?")
+        if confirm:
+            messagebox.showinfo("Pembayaran", "Terima kasih sudah berbelanja! Paket kamu akan segera diproses.")
+            self.homepage()
+
     def save_user_data(self):
         try:
             with open(user_data_file, "r") as file:
@@ -226,38 +288,26 @@ class pembayaran(tk.Tk):
         except Exception as e:
             print(f"Error saving user data: {e}")
             messagebox.showerror("Error", "Gagal menyimpan data pengguna!")
-    
+
     def update_address_listbox(self, listbox):
         listbox.delete(0, tk.END)
         for alamat in self.alamat:
             listbox.insert(tk.END, alamat)
-    
+
     def save_addresses(self):
         try:
-            lines = []
             with open(user_data_file, "r") as file:
                 lines = file.readlines()
             with open(user_data_file, "w") as file:
                 for line in lines:
                     parts = line.strip().split(',')
                     if parts[0] == self.username:
-                        print(f"Saving addresses for {self.username}: {self.alamat}")
-                        if len(parts) > 7:
-                            parts[7] = ";".join(self.alamat)
-                        else:
-                            parts.append(";".join(self.alamat))
-                        file.write(",".join(parts) + "\n")
-                    else:
-                        file.write(line)
+                        parts[7] = ";".join(self.alamat)
+                    file.write(",".join(parts) + "\n")
         except Exception as e:
             print(f"Error saving addresses: {e}")
             messagebox.showerror("Error", "Gagal menyimpan alamat!")
-    
+
     def homepage(self):
         self.destroy()
         Homepage.Homepage(self.username, self.account_type).mainloop()
-    
-    def open_payment_window(self, total_price):
-        self.destroy()  
-        Payment.selesai(self.username, total_price).mainloop()  
-
