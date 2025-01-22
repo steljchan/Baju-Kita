@@ -2,7 +2,9 @@ import tkinter as tk
 from tkinter import messagebox, simpledialog
 import json
 import os
-
+import Homepage
+import SearchBar
+import Profile
 
 class DonationPage(tk.Tk):
     def __init__(self, username, account_type):
@@ -158,7 +160,7 @@ class DonationPage(tk.Tk):
         button_frame.pack(pady=10)
 
         # Back Button
-        tk.Button(button_frame, text="Back", command=lambda: self.go_back(description_window)).pack(side=tk.LEFT, padx=10)
+        tk.Button(button_frame, text="Kembali", command=lambda: self.go_back(description_window)).pack(side=tk.LEFT, padx=10)
 
         # Edit Donation Button (Visible only to the creator of the event)
         if self.account_type == "seller" and event.get("creator") == self.username:
@@ -172,7 +174,7 @@ class DonationPage(tk.Tk):
             ).pack(side=tk.LEFT, padx=10)
 
         # Join Donation Button
-        tk.Button(button_frame, text="Join Donation", command=lambda: self.join_donation_event(event)).pack(side=tk.RIGHT, padx=10)
+        tk.Button(button_frame, text="Ikut Donation", command=lambda: self.join_donation_event(event)).pack(side=tk.RIGHT, padx=10)
 
     def go_back(self, window):
         """Close the current window and return to the donation page."""
@@ -186,8 +188,6 @@ class DonationPage(tk.Tk):
         donation_form.mainloop()
 
     def launch_ai_scan_app(self):
-        """Launch the BajuKitaApp after completing the donation form."""
-        self.destroy()  # Close the current window
         from AIFiturDonation import AI_Donation
         app = AI_Donation()
         app.mainloop()
@@ -197,39 +197,46 @@ class DonationPage(tk.Tk):
         join_window.title("Join Donation")
         join_window.geometry("300x300")
 
-        tk.Label(join_window, text="Number of Items:", font=("Arial", 12)).pack(pady=5)
+        tk.Label(join_window, text="Jumlah Baju:", font=("Arial", 12)).pack(pady=5)
         entry_items = tk.Entry(join_window, width=20)
         entry_items.pack(pady=5)
 
-        tk.Label(join_window, text="Notes:", font=("Arial", 12)).pack(pady=5)
+        tk.Label(join_window, text="Catatan:", font=("Arial", 12)).pack(pady=5)
         entry_notes = tk.Entry(join_window, width=20)
         entry_notes.pack(pady=5)
 
         def submit_donation():
+            self.open_donation_form()
+            self.launch_ai_scan_app()
             items = entry_items.get()
             notes = entry_notes.get()
             if items.isdigit() and notes:
                 donation = {"donor": self.username, "items": int(items), "notes": notes}
                 event.setdefault("donors", []).append(donation)
                 self.save_events()
-                messagebox.showinfo("Thank You", "Your donation has been recorded.")
+                messagebox.showinfo("Terima Kasih", "Donasi Anda Sudah Tercatat.")
                 join_window.destroy()
             else:
-                messagebox.showwarning("Input Error", "Please enter valid details.")
-
+                messagebox.showwarning("Input Salah", "Tolong isi informasi yang betul.")
         tk.Button(join_window, text="Submit", command=submit_donation, font=("Arial", 12), bg="#4caf50", fg="white").pack(pady=20)
 
     def go_to_homepage(self):
-        messagebox.showinfo("Navigation", "Going to Homepage.")
+        self.destroy()  # Close the current Homepage
+        app = Homepage.Homepage(username=self.username, account_type=self.account_type)  # Pass relevant info
+        app.mainloop()
 
     def go_to_searchpage(self):
-        messagebox.showinfo("Navigation", "Going to Search Page.")
+        self.destroy()  # Close the current Homepage
+        app = SearchBar.SearchPage(username=self.username, account_type=self.account_type)  # Pass relevant info
+        app.mainloop()
 
     def go_to_profile(self):
-        messagebox.showinfo("Navigation", "Going to Profile.")
+        self.destroy()  # Close the current Homepage
+        app = Profile.profile(username=self.username, account_type=self.account_type)  # Pass relevant info
+        app.mainloop()
 
     def go_to_donasi(self): 
-        messagebox.showinfo("Navigation", "Already in Donation Page.")
+        messagebox.showinfo("Navigasi", "Anda Sudah di Halaman Donasi.")
 
     def load_events(self):
         if os.path.exists(self.events_file):

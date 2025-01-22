@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import messagebox
 import os
 import ast
-import json
 import Profile
 
 posts_file = "posts.txt"
@@ -95,18 +94,9 @@ class pesanan(tk.Tk):
                         delivery_method = parts[5]
                         status = parts[6]
                         post_info_str = parts[7] if len(parts) > 7 else ''  
-                        post_info = {}
-                        if post_info_str:
-                            try:
-                                if post_info_str.startswith("{") and post_info_str.endswith("}"):
-                                    post_info = json.loads(post_info_str)  
-                                else:
-                                    print(f"Invalid post info format: {post_info_str}")
-                            except json.JSONDecodeError as e:
-                                print(f"Error parsing post info: {e}")
-                                post_info = {} 
+
                         if user == self.username:
-                            order_display = f"Pesanan: {post_name} | Creator: {creator} | Harga: {price} | Alamat: {address} | Metode Pengiriman: {delivery_method} | Status: {status} | Post Info: {post_info}"
+                            order_display = f"Pesanan: {post_name} | Creator: {creator} | Harga: {price} | Alamat: {address} | Metode Pengiriman: {delivery_method} | Status: {status} | Post Info: {post_info_str}"
                             self.order_listbox.insert(tk.END, order_display)
         except Exception as e:
             print(f"Error reading {orderan_file}: {e}")
@@ -168,24 +158,22 @@ class pesanan(tk.Tk):
                 with open(riwayat_file, "r") as file:
                     for line in file:
                         user, orders_str = line.strip().split(":", 1)
-                        riwayat_data[user] = ast.literal_eval(orders_str.strip())
+                        orders = orders_str.strip("[]").split(", ")
+                        riwayat_data[user] = [order.strip() for order in orders]
+
             completed_order_parts = completed_order.split(',')
-            post_info_str = completed_order_parts[7] if len(completed_order_parts) > 7 else '{}' 
-            try:
-                post_info_str = post_info_str.replace("'", '"')
-                post_info_str = post_info_str.replace(";", ",")
-                post_info = json.loads(post_info_str)
-            except json.JSONDecodeError as e:
-                print(f"Error parsing post info: {post_info_str} -> {e}")
-                post_info = {}
-            completed_order_entry = [post_info, "Pesanan sudah selesai"]
+            post_info_str = completed_order_parts[7] if len(completed_order_parts) > 7 else '{}'
+            completed_order_entry = f"{post_info_str} | Pesanan sudah selesai"
+
             if username not in riwayat_data:
                 riwayat_data[username] = []
             riwayat_data[username].append(completed_order_entry)
+
             with open(riwayat_file, "w") as file:
                 for user, orders in riwayat_data.items():
-                    file.write(f"{user}:{json.dumps(orders)}\n")
-            messagebox.showinfo("Riwayat Diperbarui", "Pesanan berhasil dipindahkan ke riwayat dengan status selesai.")
+                    orders_str = ", ".join(orders)
+                    file.write(f"{user}:[{orders_str}]\n")
+
         except Exception as e:
             messagebox.showerror("Error", f"Terjadi kesalahan saat memperbarui riwayat: {e}")
     

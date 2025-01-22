@@ -265,9 +265,8 @@ class order(tk.Toplevel):
                     post_data = post_entry
                     break
             if post_data and ordering_user:
-                # Replace commas with semicolons in the post data and status
                 post_data_str = str(post_data).replace(',', ';')
-                riwayat_entry = f"{post_data_str},{status}"
+                riwayat_entry = f"{post_data_str} | {status}"
                 self.add_to_riwayat_file(ordering_user, riwayat_entry)
                 with open(orderan_file, "w") as file:
                     for order in orders:

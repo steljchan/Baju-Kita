@@ -4,6 +4,7 @@ import ast
 import Profile
 import os
 from functions.posts import edit_post, remove_post
+import json
 
 posts_file = "posts.txt"
 user_data_file = "user_data.txt"
@@ -42,7 +43,7 @@ class my_posts(tk.Tk):
         
         self.show_my_posts()
         
-        self.add_post_button = tk.Button(self, text="Add Post", font=("Arial", 12), bg="#4caf50", fg="white", command=self.add_post)
+        self.add_post_button = tk.Button(self, text="Tambahkan Post", font=("Arial", 12), bg="#4caf50", fg="white", command=self.add_post)
         self.add_post_button.pack(pady=10)
         
         self.edit_post_button = tk.Button(self, text="Edit Post", font=("Arial", 12), bg="#00008B", fg="white", command=self.edit_post)
@@ -51,7 +52,7 @@ class my_posts(tk.Tk):
         self.close_button = tk.Button(self, text="Kembali", font=("Arial", 12), bg="#ff6f61", fg="white", command=self.back)
         self.close_button.place(x=600, y=20)
         
-        self.remove_post_button = tk.Button(self, text="Remove Post", font=("Arial", 12), bg="#f44336", fg="white", command=self.remove_post)
+        self.remove_post_button = tk.Button(self, text="Hilangkan Post", font=("Arial", 12), bg="#f44336", fg="white", command=self.remove_post)
         self.remove_post_button.pack(pady=10)
         
         self.load_user_data()
@@ -115,7 +116,23 @@ class my_posts(tk.Tk):
                 )
                 self.posts_listbox.insert(tk.END, display_post)
     
+    def open_Thrifting_form(self):
+        """Open the thrifting form window."""
+        self.destroy()  # Close the current window
+        from BiodataBajuThrifting import BiodataBajuThrifting
+        thrifting_form = BiodataBajuThrifting()
+        thrifting_form.mainloop()
+
+    def launch_ai_scan_app(self):
+        """Launch the BajuKitaApp after completing the thrifting form."""
+        self.destroy()  # Close the current window
+        from AIFiturThrifting import AI_Thrifting
+        app = AI_Thrifting()
+        app.mainloop()
+    
     def add_post(self):
+        self.open_Thrifting_form()
+        self.launch_ai_scan_app()
         organisasi = user_data.get(self.username, {}).get("organisasi", "")
         if not organisasi:
             messagebox.showwarning("Data Missing", "Organisasi tidak ditemukan dalam data pengguna.")

@@ -1,15 +1,15 @@
 import tkinter as tk
 from tkinter import messagebox
 import os
-import json
+import ast
 import Profile
 
 riwayat_file = "riwayat.txt"
 user_data_file = "user_data.txt"
 user_data = {}
 
-class order(tk.Toplevel):
-    def __init__(self, username, account_type):
+class riwayat(tk.Toplevel):
+    def __init__(self, username, account_type=None):
         super().__init__()
         self.title("Riwayat Pesanan")
         self.geometry("500x400")
@@ -71,16 +71,22 @@ class order(tk.Toplevel):
                 for line in riwayat_data:
                     user, orders_str = line.strip().split(":", 1)
                     if user == self.username:
-                        orders = json.loads(orders_str.strip())
-                        for order in orders:
-                            post_info = order[0] 
-                            status = order[1]     
-                            post_name = post_info.get('nama', 'Unknown')
-                            post_status = status
-                            self.order_listbox.insert(tk.END, f"{post_name} - Status: {post_status}")
-                            if len(orders) > 5:
-                                orders.pop(0)
-                                self.update_riwayat_file(user, orders)
+                        # Parse the list of orders
+                        orders_list = orders_str.strip("[]").split(", ")
+                        # Ensure there are at most 5 orders (queue behavior)
+                        while len(orders_list) > 5:
+                            orders_list.pop(0)
+
+                        for order_str in orders_list:
+                            try:
+                                # Clean up the format: replace semicolons with commas and single quotes with double quotes
+                                order_str = order_str.replace("'", '"').replace(";", ",")
+                                self.order_listbox.insert(tk.END, order_str)
+                            except Exception as e:
+                                print(f"Error parsing order: {order_str} -> {e}")
+                    
+                        # Update the file with the limited list of orders
+                        self.update_riwayat_file(user, orders_list)
         except Exception as e:
             print(f"Error reading {riwayat_file}: {e}")
     
@@ -91,11 +97,13 @@ class order(tk.Toplevel):
                 with open(riwayat_file, "r") as file:
                     for line in file:
                         user, orders_str = line.strip().split(":", 1)
-                        riwayat_data[user] = json.loads(orders_str.strip())
-            riwayat_data[username] = updated_orders  
+                        riwayat_data[user] = orders_str.strip("[]").split(", ")
+            # Update only the current user's orders
+            riwayat_data[username] = updated_orders
             with open(riwayat_file, "w") as file:
                 for user, orders in riwayat_data.items():
-                    file.write(f"{user}:{json.dumps(orders)}\n")
+                    orders_str = ", ".join(orders)
+                    file.write(f"{user}:[{orders_str}]\n")
         except Exception as e:
             messagebox.showerror("Error", f"Terjadi kesalahan saat memperbarui riwayat: {e}")
     

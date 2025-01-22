@@ -6,11 +6,15 @@ import random
 from PilihDaurUlang import MenuDaurUlang    
 
 class AI_Donation(tk.Tk):
-    def __init__(self):
+    def __init__(self, username=None, account_type=None):
         super().__init__()
         self.title("BajuKita - AI Scan")
         self.geometry("500x600")
         self.eval('tk::PlaceWindow . center')
+
+        # Store user information
+        self.username = username
+        self.account_type = account_type
 
         self.label_title = tk.Label(self, text="Upload atau Foto Baju Kamu", font=("Helvetica", 14, "bold"))
         self.label_title.pack(pady=20)
@@ -73,16 +77,13 @@ class AI_Donation(tk.Tk):
             self.show_recycle_page()
 
     def open_camera(self):
-        self.button_upload.pack_forget()  # Hide the upload button
-        self.button_camera.pack_forget()  # Hide the take picture button
-        self.cap = cv2.VideoCapture(0)
-        frame_width = 210  # Example: Set width to 640 pixels
-        frame_height = 120  # Example: Set height to 480 pixels
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
+        if self.cap is None or not self.cap.isOpened():
+            self.cap = cv2.VideoCapture(0)
+            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
         self.show_camera = True
         self.show_frame()
-        self.button_capture.pack(side="bottom", pady=10)  # Show the capture button when the camera is open
+        self.button_capture.pack(side="bottom", pady=10)  # Show the capture button
 
     def show_frame(self):
         if self.show_camera:
@@ -90,46 +91,29 @@ class AI_Donation(tk.Tk):
             if ret:
                 self.frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 self.frame = Image.fromarray(self.frame)
+                self.frame = self.frame.resize((300, 300), Image.Resampling.NEAREST)
                 self.frame = ImageTk.PhotoImage(self.frame)
                 self.image_label.config(image=self.frame)
                 self.image_label.image = self.frame
-                self.button_capture.lift()  # Ensure the capture button is at the top
             self.after(10, self.show_frame)
 
     def capture_image(self):
         if self.show_camera:
-            # Stop the camera display
             self.show_camera = False
-            
-            # Capture the frame
-            ret, self.frame = self.cap.read()
-            if not ret or self.frame is None:
-                raise ValueError("Failed to capture frame from the camera.")
-            
-            # Process and save the captured image
-            try:
-                image = Image.fromarray(cv2.cvtColor(self.frame, cv2.COLOR_RGB2BGR))
+            ret, frame = self.cap.read()
+            if ret:
+                image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
                 image = image.resize((300, 300), Image.Resampling.NEAREST)
                 image.save("captured_image.jpg")  # Save the captured image
 
-                # Update the UI with the captured image
                 image_tk = ImageTk.PhotoImage(image)
                 self.image_label.config(image=image_tk)
                 self.image_label.image = image_tk
 
-                # Hide the capture button
-                self.button_capture.pack_forget()
-
-                # Start the scan of the captured image
+                self.button_capture.pack_forget()  # Hide the capture button
                 self.simulate_scan(image)
 
-            except cv2.error as e:
-                raise RuntimeError(f"OpenCV error during image processing: {e}")
-
-            finally:
-                # Release the camera
-                self.cap.release()
-
+            self.cap.release()  # Release the camera
 
     def check_clothes_condition(self, image):
         # Simulate the condition check
@@ -138,15 +122,19 @@ class AI_Donation(tk.Tk):
     def show_recycle_page(self):
         """Launch the MenuDaurUlang app."""
         self.destroy()  # Close the current application window
-        recycle_app = MenuDaurUlang() 
+        recycle_app = MenuDaurUlang(self.username, self.account_type)
         recycle_app.mainloop()
 
     def on_exit(self):
-        self.destroy
+        """Handle cleanup and navigate back to DonationPage."""
+        if self.cap is not None and self.cap.isOpened():
+            self.cap.release()
+        self.destroy()  # Close the current window
         from DonationPage import DonationPage
-        back_to_donationpage = DonationPage()
-        
+        app = DonationPage(username=self.username, account_type=self.account_type)
+        app.mainloop()
+
 
 if __name__ == "__main__":
-    app = AI_Donation()
+    app = AI_Donation(username="User123", account_type="Regular")
     app.mainloop()

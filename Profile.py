@@ -6,6 +6,8 @@ import Orderan
 import Pesanan
 import Riwayat_belanja
 import Postingan
+import DonationPage
+import SearchBar
 import os
 
 posts_file = "posts.txt"
@@ -16,7 +18,7 @@ class profile(tk.Tk):
     def __init__(self, username, account_type):
         tk.Tk.__init__(self)
         self.title("Profile")
-        self.geometry("500x400") 
+        self.geometry("500x500") 
         self.configure(bg="#f4f4f4")
         self.ensure_file_exists()
         self.load_user_data()
@@ -65,6 +67,21 @@ class profile(tk.Tk):
         
         self.homepage_button = tk.Button(self, text="Homepage", font=("Arial", 12), bg="#4caf50", fg="white", command=self.homepage)
         self.homepage_button.pack(pady=10)
+        
+        self.nav_bar = tk.Frame(self, bg="#00796b", height=50)
+        self.nav_bar.pack(side=tk.BOTTOM, fill=tk.X)
+        
+        home_button = tk.Button(self.nav_bar, text="Homepage", font=("Arial", 12), bg="#004d40", fg="white", command=self.go_to_homepage)
+        home_button.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+        
+        search_button = tk.Button(self.nav_bar, text="Search Page", font=("Arial", 12), bg="#388e3c", fg="white", command=self.go_to_searchpage)
+        search_button.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+        
+        donation_button = tk.Button(self.nav_bar, text="Donation Page", font=("Arial", 12), bg="#d32f2f", fg="white", command=self.go_to_donasi)
+        donation_button.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+        
+        profile_button = tk.Button(self.nav_bar, text="Profile", font=("Arial", 12), bg="#fbc02d", fg="white", command=self.go_to_profile)
+        profile_button.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
     
     def update_info(self):
         new_kelamin = simpledialog.askstring("Input", "Masukkan jenis kelamin baru:", initialvalue=self.kelamin)
@@ -91,7 +108,10 @@ class profile(tk.Tk):
         messagebox.showinfo("Profile Updated", "Your profile has been successfully updated!")
     
     def riwayat(self):
-        pass
+        self.withdraw() 
+        pesanan_window = Riwayat_belanja.riwayat(self.username)  
+        pesanan_window.protocol("WM_DELETE_WINDOW", self.on_window_close)
+        pesanan_window.mainloop()
     
     def pesanan(self):
         self.withdraw() 
@@ -180,6 +200,24 @@ class profile(tk.Tk):
                 email = data['email']
                 alamat = ";".join(data['alamat']) if data['alamat'] else "" 
                 f.write(f"{username},{basket_count},{donasi_count},{kelamin},{organisasi},{tlp},{email},,{alamat}\n")
+    
+    def go_to_homepage(self):
+        self.destroy()  # Close the current Homepage
+        app = Homepage.Homepage(username=self.username, account_type=self.account_type)  # Pass relevant info
+        app.mainloop()
+    
+    def go_to_searchpage(self):
+        self.destroy()  # Close the current Homepage
+        app = SearchBar.SearchPage(username=self.username, account_type=self.account_type)  # Pass relevant info
+        app.mainloop()
+    
+    def go_to_donasi(self):
+        self.destroy()  # Close the current Homepage
+        app = DonationPage.DonationPage(username=self.username, account_type=self.account_type)  # Pass relevant info
+        app.mainloop()
+    
+    def go_to_profile(self):
+        messagebox.showinfo("Navigasi", "Anda sudah berada di Profil.")
 
 if __name__ == "__main__":
     app = profile(username="Seller1", account_type="seller")

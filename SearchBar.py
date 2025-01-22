@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import messagebox
 import Homepage  # Import Homepage to navigate back
 import Profile  # Import Profile page
+import DonationPage
+import ast  # For safely parsing dictionary-like strings in posts
 
 class SearchPage(tk.Tk):
     def __init__(self, username, account_type):
@@ -56,7 +58,12 @@ class SearchPage(tk.Tk):
 
         # Read posts from the file and filter by the search query
         posts = self.load_posts()
-        matching_posts = [post for post in posts if query.lower() in post.lower()]
+        matching_posts = [
+            post for post in posts 
+            if query.lower() in post.get("nama", "").lower() or 
+               query.lower() in post.get("kategori", "").lower() or 
+               query.lower() in post.get("deskripsi", "").lower()
+        ]
         
         if not matching_posts:
             messagebox.showinfo("No Results", "No matching posts found.")
@@ -68,7 +75,15 @@ class SearchPage(tk.Tk):
         try:
             with open("posts.txt", "r") as file:
                 posts = file.readlines()
-            return [post.strip() for post in posts]  # Remove leading/trailing whitespaces
+            parsed_posts = []
+            for post in posts:
+                try:
+                    post_dict = ast.literal_eval(post.strip())
+                    if isinstance(post_dict, dict):
+                        parsed_posts.append(post_dict)
+                except (SyntaxError, ValueError):
+                    print(f"Skipping invalid post: {post.strip()}")
+            return parsed_posts
         except FileNotFoundError:
             messagebox.showerror("Error", "Posts file not found.")
             return []
@@ -76,7 +91,13 @@ class SearchPage(tk.Tk):
     def display_results(self, results):
         self.result_list.delete(0, tk.END)  # Clear previous results
         for result in results:
-            self.result_list.insert(tk.END, result)
+            display_text = (
+                f"Nama: {result.get('nama', 'N/A')} | "
+                f"Kategori: {result.get('kategori', 'N/A')} | "
+                f"Deskripsi: {result.get('deskripsi', 'N/A')} | "
+                f"Harga: {result.get('harga', 'N/A')}"
+            )
+            self.result_list.insert(tk.END, display_text)
 
     def go_to_homepage(self):
         self.destroy()
@@ -84,10 +105,12 @@ class SearchPage(tk.Tk):
         app.mainloop()
 
     def go_to_searchpage(self):
-        messagebox.showinfo("Search Page", "You are already on the Search Page.")
+        messagebox.showinfo("Navigasi", "Anda Sudah di Searchpage.")
     
     def go_to_donasi(self):
         self.destroy()
+        app = DonationPage.DonationPage(username=self.username, account_type=self.account_type)
+        app.mainloop()
 
     def go_to_profile(self):
         self.destroy()

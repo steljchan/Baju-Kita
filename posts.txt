@@ -1,2 +1,2 @@
-{'nama': 'akljdlaksjd', 'tempat': 'dkfsfd', 'organisasi': 'sdljfgw', 'tipe': 'donasi', 'deskripsi': 'mcakj', 'creator': 'Britney'}
-{'nama': 'adhasd', 'tempat': 'akshdka', 'organisasi': 'lasdja', 'tipe': 'donasi', 'deskripsi': 'aklsdha', 'creator': 'Britney'}
+{'nama': 'good', 'kategori': 'balita', 'tempat': 'mks', 'organisasi': 'hello', 'tipe': 'Thrift', 'harga': '60.000', 'deskripsi': 'adhsadh', 'creator': 'Britney'}
+{'nama': 'hello', 'kategori': 'bayi', 'tempat': 'jkt', 'organisasi': 'hello', 'tipe': 'Thrift', 'harga': '30.000', 'deskripsi': 'jhasdk', 'creator': 'Britney'}

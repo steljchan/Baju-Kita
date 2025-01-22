@@ -31,6 +31,12 @@ class selesai(tk.Tk):
             }
         self.user_info = user_data[username]
         
+        self.payment_label = tk.Label(self, text="Metode Pembayaran: Belum dipilih", font=("Arial", 18, "bold"), bg="#f4f4f4", fg="#333")
+        self.payment_label.pack(pady=20)
+        
+        self.payment_button = tk.Button(self, text="Pilih Metode Pembayaran", font=("Arial", 12), bg="#4caf50", fg="white", command=self.select_payment_method)
+        self.payment_button.pack(pady=10)
+        
         self.selesai_button = tk.Button(self, text="Bayar", font=("Arial", 12), bg="#4caf50", fg="white", command=self.selesai)
         self.selesai_button.pack(pady=10)
         
@@ -72,6 +78,38 @@ class selesai(tk.Tk):
                         }
                     except Exception as e:
                         print(f"Error processing line: {line}. Error: {e}")
+    
+    def select_payment_method(self):
+        def set_payment_method():
+            selected_method = method_var.get()
+            if selected_method:
+                self.payment_method = selected_method
+                self.payment_label.config(text=f"Metode Pembayaran: {selected_method}")
+                payment_window.destroy()  
+            else:
+                messagebox.showwarning("Peringatan", "Pilih metode pembayaran terlebih dahulu!")
+
+        payment_window = tk.Toplevel(self)
+        payment_window.title("Pilih Metode Pembayaran")
+        payment_window.geometry("400x400")
+        method_var = tk.StringVar(value="")
+
+        tk.Label(payment_window, text="Pilih Metode Pembayaran", font=("Arial", 14, "bold"), bg="#f4f4f4", fg="#333").pack(pady=10)
+
+        # E-Wallet Section
+        for method in ["Gopay", "Dana", "Ovo"]:
+            tk.Radiobutton(payment_window, text=method, variable=method_var, value=method, font=("Arial", 12), bg="#f4f4f4", fg="#333").pack(pady=5)
+
+        # Tunai Section
+        tk.Label(payment_window, text="Tunai", font=("Arial", 14, "bold"), bg="#f4f4f4", fg="#333").pack(pady=10)
+        tk.Radiobutton(payment_window, text="Cash On Delivery", variable=method_var, value="Cash On Delivery", font=("Arial", 12), bg="#f4f4f4", fg="#333").pack(pady=5)
+
+        # Virtual Account Section
+        for method in ["BCA", "Mandiri", "BRI", "BNI"]:
+            tk.Radiobutton(payment_window, text=method, variable=method_var, value=method, font=("Arial", 12), bg="#f4f4f4", fg="#333").pack(pady=5)
+
+        select_button = tk.Button(payment_window, text="Pilih Metode", font=("Arial", 12), bg="#4caf50", fg="white", command=set_payment_method)
+        select_button.pack(pady=10)
     
     def selesai(self):
         try:

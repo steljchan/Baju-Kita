@@ -6,8 +6,7 @@ import Profile
 import Keranjang
 import SearchBar
 from ChatFitur import ChatApp
-from DonationPageSeller import DonationPageSell
-from DonationPageCustomer import DonationPageCus  
+import DonationPage
 
 posts_file = "posts.txt"
 user_data_file = "user_data.txt"
@@ -20,7 +19,7 @@ class Homepage(tk.Tk):
     def __init__(self, username, account_type):
         super().__init__()
         self.title("Baju Kita")
-        self.geometry("800x600")
+        self.geometry("900x600")
         self.configure(bg="#f4f4f4")
         self.username = username
         self.account_type = account_type
@@ -45,11 +44,11 @@ class Homepage(tk.Tk):
         self.button_frame = tk.Frame(self, bg="#f4f4f4")
         self.button_frame.pack(pady=20)
 
-        self.chat_button = tk.Button(self.button_frame, text="Chat", font=("Arial", 14), bg="#007BFF", fg="white", command=self.open_chat)
-        self.chat_button.grid(row=0, column=2, padx=10)
+        self.chat_button = tk.Button(self, text="Chat", font=("Arial", 14), bg="#007BFF", fg="white", command=self.open_chat)
+        self.chat_button.place(x=695, y=20)
         
         self.basket_button = tk.Button(self, text="Basket", font=("Arial", 14), bg="#ff6f61", fg="white", command=lambda: self.basket(self.username, self.account_type))
-        self.basket_button.place(x=680, y=20) 
+        self.basket_button.place(x=700, y=20) 
         self.bind(
             "<Configure>", 
             lambda event: self.basket_button.place(
@@ -206,30 +205,6 @@ class Homepage(tk.Tk):
         except IndexError:
             messagebox.showwarning("Tidak ada post yang dipilih", "Tolong pilih post untuk ditambahkan ke basket.")
     
-    def tambahkan_isi_donasi(self):
-        try:
-            selected_index = self.posts_list.curselection()[0]
-            post = self.posts_data[selected_index] 
-            if post.get('tipe', '').lower() == 'donasi':
-                if any(donasi_post.get('nama') == post.get('nama') and donasi_post.get('creator') == post.get('creator') for donasi_post in self.user_info['donasi']):
-                    messagebox.showwarning("Post Sudah Ada di Donasi", "Post ini sudah ada di dalam daftar donasi.")
-                    return
-                self.user_info['donasi'].append(post)
-                self.user_info['donasi_count'] += 1
-                donasi_entry = {
-                    "pelanggan": self.username,
-                    "post": post,
-                    "creator": post.get('creator', 'Unknown') 
-                }
-                self.save_to_file(donasi_file, donasi_entry)
-                messagebox.showinfo("Ditambahkan ke Donasi", f"'{post['nama']}' sudah ditambahkan ke dalam daftar donasi.")
-                self.update_donasi()
-                self.save_user_data() 
-            else:
-                messagebox.showwarning("Bukan post Donasi", "Hanya post Donasi yang dapat dimasukkan ke dalam daftar donasi.")
-        except IndexError:
-            messagebox.showwarning("Tidak ada post yang dipilih", "Tolong pilih post untuk ditambahkan ke donasi.")
-    
     def save_to_file(self, file_name, entry):
         try:
             with open(file_name, "a") as file:
@@ -239,9 +214,6 @@ class Homepage(tk.Tk):
     
     def update_basket(self):
         messagebox.showinfo("Tambahan", f"Basket: {self.user_info['basket_count']} Barang")
-    
-    def update_donasi(self):
-        messagebox.showinfo("Tambahan", f"Donasi: {self.user_info['donasi_count']} Donasi yang ingin dilakukan")
     
     def load_thrift_posts(self):
         self.posts_list.delete(0, tk.END)
@@ -284,30 +256,21 @@ class Homepage(tk.Tk):
     
     def go_to_homepage(self):
         messagebox.showinfo("Navigasi", "Anda sudah berada di Homepage.")
-
+    
     def go_to_searchpage(self):
         self.destroy()  # Close the current Homepage
         app = SearchBar.SearchPage(username=self.username, account_type=self.account_type)  # Pass relevant info
         app.mainloop()
-
+    
     def donasi(self):
-        """Navigate to the donation page based on account type."""
-        self.destroy()  # Close the current homepage window
-        if self.account_type.lower() == "penjual":
-            self.destroy
-            seller_donation_page = DonationPageSell(self.username, self.account_type)   
-            seller_donation_page.mainloop()
-        elif self.account_type.lower() == "customer":
-            self.destroy
-            customer_donation_page = DonationPageCus(self.username, self.account_type)  # Pass username and account type
-            customer_donation_page.mainloop()  # Start customer donation page window
-        else:
-            messagebox.showinfo("Donasi", "Halaman donasi hanya tersedia untuk penjual atau pelanggan.")
-
+        self.destroy()  # Close the current Homepage
+        app = DonationPage.DonationPage(username=self.username, account_type=self.account_type)  # Pass relevant info
+        app.mainloop()
+    
     def profile(self, username, account_type):
         self.destroy()
         Profile.profile(username, account_type).mainloop()
-        
+    
     def open_chat(self):
         self.destroy()  
         chat_window = ChatApp(self.username, self.account_type)
