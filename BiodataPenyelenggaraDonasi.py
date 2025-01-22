@@ -2,9 +2,10 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 
 class Biodata_Penyelenggara(tk.Tk):
-    def __init__(self):
+    def __init__(self, callback=None):
         super().__init__()
-        self.title("BajuKita")
+        self.callback = callback
+        self.title("Biodata Penyelenggara")
         self.geometry("500x600")
         self.eval('tk::PlaceWindow . center')
 
@@ -125,7 +126,13 @@ class Biodata_Penyelenggara(tk.Tk):
 
         # Show a confirmation message
         messagebox.showinfo("Submission Successful", "Your data has been submitted!")
+
+        # Trigger the callback if it exists
+        if self.callback:
+            self.callback()
+
         self.on_exit()  # Close the application
+
 
     def clear_frame(self):
         for widget in self.main_frame.winfo_children():

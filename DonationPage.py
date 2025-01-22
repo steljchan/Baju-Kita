@@ -2,9 +2,9 @@ import tkinter as tk
 from tkinter import messagebox, simpledialog
 import json
 import os
-from BiodataPenyelenggaraDonasi import Biodata_Penyelenggara
 
-class DonationPageSell(tk.Tk):
+
+class DonationPage(tk.Tk):
     def __init__(self, username, account_type):
         super().__init__()
         self.title("Donation Page")
@@ -16,14 +16,20 @@ class DonationPageSell(tk.Tk):
         self.events_file = "donation_events.json"
         self.donation_events = self.load_events()
 
-        self.label_welcome = tk.Label(self, text=f"Donation Events, {self.username}", font=("Arial", 18, "bold"), bg="#f4f4f4", fg="#333")
+        self.label_welcome = tk.Label(
+            self, text=f"Welcome, {self.username}", font=("Arial", 18, "bold"), bg="#f4f4f4", fg="#333"
+        )
         self.label_welcome.pack(pady=20)
 
-        add_event_button = tk.Button(self, text="Add Donation Event", font=("Arial", 12), bg="#388e3c", fg="white", command=self.open_biodata_form)
-        add_event_button.pack(pady=10)
+        if self.account_type == "seller":
+            add_event_button = tk.Button(
+                self, text="Add Donation Event", font=("Arial", 12), bg="#388e3c", fg="white", command=self.open_biodata_form
+            )
+            add_event_button.pack(pady=10)
 
         self.donation_frame = tk.Frame(self)
         self.donation_frame.pack(pady=10, fill=tk.X)
+
         self.create_donation_buttons()
 
         self.nav_bar = tk.Frame(self, bg="#00796b", height=50)
@@ -44,27 +50,30 @@ class DonationPageSell(tk.Tk):
     def create_donation_buttons(self):
         for widget in self.donation_frame.winfo_children():
             widget.destroy()
-        for event in self.donation_events:
-            button = tk.Button(self.donation_frame, text=event["name"], command=lambda e=event: self.show_event_description(e), font=("Arial", 12))
-            button.pack(pady=10, fill=tk.X, padx=20)
+        if self.account_type == "seller":
+            events = [event for event in self.donation_events if event["creator"] == self.username]
+        else:  # customer
+            events = self.donation_events
 
-            if self.username == event["creator"]:
-                edit_button = tk.Button(self.donation_frame, text="Edit", command=lambda e=event: self.edit_event(e), font=("Arial", 10))
-                edit_button.pack(pady=5)
-                delete_button = tk.Button(self.donation_frame, text="Delete", command=lambda e=event: self.delete_event(e), font=("Arial", 10))
-                delete_button.pack(pady=5)
+        for event in events:
+            button = tk.Button(
+                self.donation_frame,
+                text=event["name"],
+                command=lambda e=event: self.show_event_description(e),
+                font=("Arial", 12),
+            )
+            button.pack(pady=10, fill=tk.X, padx=20)
 
     def open_biodata_form(self):
         """Open the Biodata Form before adding a new event."""
         self.withdraw()  # Hide current window
-        biodata_form = Biodata_Penyelenggara(self.username)  # Open Biodata Form
+        from BiodataPenyelenggaraDonasi import Biodata_Penyelenggara
+        biodata_form = Biodata_Penyelenggara(callback=self.on_biodata_complete)  # Pass the callback
 
-        def on_biodata_complete():
-            biodata_form.destroy()  # Close Biodata Form
-            self.deiconify()  # Show Donation Page
-            self.open_event_details_form()  # Proceed to Event Details Form
-
-        biodata_form.protocol("WM_DELETE_WINDOW", on_biodata_complete)  # Ensure that the form closes properly
+    def on_biodata_complete(self):
+        """Called when the biodata form is complete."""
+        self.deiconify()  # Show Donation Page
+        self.open_event_details_form()  # Proceed to Event Details Form
 
     def open_event_details_form(self):
         """Open a new form for event-specific details."""
@@ -116,14 +125,27 @@ class DonationPageSell(tk.Tk):
         description_window.title(event["name"])
         description_window.geometry("400x400")
 
+        # Event Name
         label_name = tk.Label(description_window, text=event["name"], font=("Arial", 16, "bold"))
         label_name.pack(pady=10)
 
-        text_description = tk.Text(description_window, wrap=tk.WORD, font=("Arial", 12))
-        text_description.insert(tk.END, event["description"])
-        text_description.config(state=tk.DISABLED)
-        text_description.pack(pady=10, padx=20)
+        # Event Details
+        details_frame = tk.Frame(description_window)
+        details_frame.pack(pady=10, padx=20, fill=tk.BOTH)
 
+        tk.Label(details_frame, text="Description:", font=("Arial", 12, "bold")).grid(row=0, column=0, sticky="w")
+        tk.Label(details_frame, text=event["description"], font=("Arial", 12)).grid(row=0, column=1, sticky="w", padx=10)
+
+        tk.Label(details_frame, text="Timeline:", font=("Arial", 12, "bold")).grid(row=1, column=0, sticky="w")
+        tk.Label(details_frame, text=event["timeline"], font=("Arial", 12)).grid(row=1, column=1, sticky="w", padx=10)
+
+        tk.Label(details_frame, text="Type:", font=("Arial", 12, "bold")).grid(row=2, column=0, sticky="w")
+        tk.Label(details_frame, text=event["type"], font=("Arial", 12)).grid(row=2, column=1, sticky="w", padx=10)
+
+        tk.Label(details_frame, text="Quantity:", font=("Arial", 12, "bold")).grid(row=3, column=0, sticky="w")
+        tk.Label(details_frame, text=event["quantity"], font=("Arial", 12)).grid(row=3, column=1, sticky="w", padx=10)
+
+        # Donor Contributions Section
         tk.Label(description_window, text="Donor Contributions:", font=("Arial", 12, "bold")).pack(pady=5)
         contributions_frame = tk.Frame(description_window)
         contributions_frame.pack(pady=5, padx=20, fill=tk.BOTH)
@@ -131,8 +153,44 @@ class DonationPageSell(tk.Tk):
         for donor in event.get("donors", []):
             tk.Label(contributions_frame, text=f"{donor['donor']}: {donor['items']} items - {donor['notes']}", font=("Arial", 10)).pack(anchor="w")
 
-        join_button = tk.Button(description_window, text="Join Donation", command=lambda: self.join_donation_event(event), font=("Arial", 12))
-        join_button.pack(pady=10)
+        # Buttons Frame
+        button_frame = tk.Frame(description_window)
+        button_frame.pack(pady=10)
+
+        # Back Button
+        tk.Button(button_frame, text="Back", command=lambda: self.go_back(description_window)).pack(side=tk.LEFT, padx=10)
+
+        # Edit Donation Button (Visible only to the creator of the event)
+        if self.account_type == "seller" and event.get("creator") == self.username:
+            tk.Button(
+                button_frame,
+                text="Edit Donation Event",
+                command=lambda: [self.edit_event(event), description_window.destroy()],
+                bg="#f57c00",
+                fg="white",
+                font=("Arial", 12),
+            ).pack(side=tk.LEFT, padx=10)
+
+        # Join Donation Button
+        tk.Button(button_frame, text="Join Donation", command=lambda: self.join_donation_event(event)).pack(side=tk.RIGHT, padx=10)
+
+    def go_back(self, window):
+        """Close the current window and return to the donation page."""
+        window.destroy()
+
+    def open_donation_form(self):
+        """Open the donation form window."""
+        self.destroy()  # Close the current window
+        from BiodataBajuDonasi import BiodataBajuDonasi
+        donation_form = BiodataBajuDonasi()
+        donation_form.mainloop()
+
+    def launch_ai_scan_app(self):
+        """Launch the BajuKitaApp after completing the donation form."""
+        self.destroy()  # Close the current window
+        from AIFiturDonation import AI_Donation
+        app = AI_Donation()
+        app.mainloop()
 
     def join_donation_event(self, event):
         join_window = tk.Toplevel(self)
@@ -232,7 +290,19 @@ class DonationPageSell(tk.Tk):
             self.donation_events.remove(event)
             self.save_events()
             self.create_donation_buttons()
+    
+    def load_events(self):
+        if os.path.exists(self.events_file):
+            with open(self.events_file, "r") as f:
+                return json.load(f)
+        return []
+
+    def save_events(self):
+        with open(self.events_file, "w") as f:
+            json.dump(self.donation_events, f, indent=4)
 
 if __name__ == "__main__":
-    app = DonationPageSell(username="User1", account_type="donor")
+    app = DonationPage(username="Seller1", account_type="seller")
     app.mainloop()
+
+

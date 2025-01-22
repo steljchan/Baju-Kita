@@ -1,7 +1,9 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
+from AIFiturDonation import AI_Donation
 
-class Informasi_Dan_Pemilik_Baju(tk.Tk):
+
+class BiodataBajuDonasi(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("BajuKita")
@@ -67,16 +69,19 @@ class Informasi_Dan_Pemilik_Baju(tk.Tk):
         elif submit:
             button_submit = tk.Button(button_frame, text="Submit", command=self.submit_organization)
             button_submit.pack(side=tk.RIGHT, padx=20)
-        else:
-            print("tes")
 
     def submit_organization(self):
+        # Collect data from both pages
         data_page1 = {question: entry.get() for question, entry in self.entries_page1.items()}
         data_page2 = {question: entry.get() for question, entry in self.entries_page2.items()}
 
         # Show a confirmation message
         messagebox.showinfo("Submission Successful", "Your data has been submitted!")
-        self.on_exit()  # Close the application
+
+        # Transition to AI Scan Fitur
+        self.destroy()  # Close the current form
+        ai_scan_app = AI_Donation()
+        ai_scan_app.mainloop()
 
     def clear_frame(self):
         for widget in self.main_frame.winfo_children():
@@ -85,6 +90,16 @@ class Informasi_Dan_Pemilik_Baju(tk.Tk):
     def on_exit(self):
         self.destroy()
 
+
+    def upload_image(self):
+        # Placeholder for upload functionality
+        messagebox.showinfo("Upload", "Upload Gambar functionality is not implemented.")
+
+    def open_camera(self):
+        # Placeholder for camera functionality
+        messagebox.showinfo("Camera", "Camera functionality is not implemented.")
+
+
 if __name__ == "__main__":
-    app = Informasi_Dan_Pemilik_Baju()
+    app = BiodataBajuDonasi()
     app.mainloop()

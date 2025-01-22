@@ -3,8 +3,9 @@ from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk, ImageDraw
 import cv2
 import random
+from PilihDaurUlang import MenuDaurUlang    
 
-class BajuKitaApp(tk.Tk):
+class AI_Donation(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("BajuKita - AI Scan")
@@ -65,13 +66,11 @@ class BajuKitaApp(tk.Tk):
 
         # Simulate the AI condition check
         if self.check_clothes_condition(image):
-            response = messagebox.showinfo("Upload Status", "Pakaian kamu berhasil terupload")
-            if response == 'ok':
-                self.on_exit()
+            messagebox.showinfo("Upload Status", "Pakaian kamu berhasil terupload")
+            self.on_exit()
         else:
-            response = messagebox.showerror("Upload Status", "Maaf, pakaian kamu tidak bisa diupload. Mungkin kamu bisa mendaur ulang baju kamu!")
-            if response == 'ok':
-                self.show_recycle_page()
+            messagebox.showerror("Upload Status", "Maaf, pakaian kamu tidak bisa diupload. Mungkin kamu bisa mendaur ulang baju kamu!")
+            self.show_recycle_page()
 
     def open_camera(self):
         self.button_upload.pack_forget()  # Hide the upload button
@@ -137,17 +136,17 @@ class BajuKitaApp(tk.Tk):
         return random.choice([True, False])
 
     def show_recycle_page(self):
-        recycle_page = tk.Toplevel(self)
-        recycle_page.title("Recycle Page")
-        recycle_page.geometry("500x600")
-        tk.Label(recycle_page, text="Silakan daur ulang baju kamu!").pack(pady=20)
-        tk.Button(recycle_page, text="Tutup", command=recycle_page.destroy).pack(pady=10)
+        """Launch the MenuDaurUlang app."""
+        self.destroy()  # Close the current application window
+        recycle_app = MenuDaurUlang() 
+        recycle_app.mainloop()
 
     def on_exit(self):
-        if self.cap:
-            self.cap.release()
-        self.destroy()
+        self.destroy
+        from DonationPage import DonationPage
+        back_to_donationpage = DonationPage()
+        
 
 if __name__ == "__main__":
-    app = BajuKitaApp()
+    app = AI_Donation()
     app.mainloop()

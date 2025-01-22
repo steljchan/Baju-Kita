@@ -1,10 +1,13 @@
 import tkinter as tk
 from tkinter import messagebox
+from DonationPage import DonationPage  # Ensure DonationPage is correctly implemented
 
-class BajuKitaApp(tk.Tk):
-    def __init__(self):
+class MenuDaurUlang(tk.Tk):
+    def __init__(self, username, account_type):
         super().__init__()
-        self.title("BajuKita")
+        self.username = username
+        self.account_type = account_type
+        self.title("MenuDaurUlang")
         self.geometry("500x600")
         self.eval('tk::PlaceWindow . center')
 
@@ -13,7 +16,7 @@ class BajuKitaApp(tk.Tk):
 
         self.create_buttons()
 
-        self.back_button = tk.Button(self, text="Back", command=self.on_exit, font=("Helvetica", 12))
+        self.back_button = tk.Button(self, text="Back", command=self.go_back, font=("Helvetica", 12))
         self.back_button.pack(pady=10)
 
     def create_buttons(self):
@@ -160,9 +163,11 @@ Langkah-Langkah:
 4. Tambahkan lapisan bawah untuk kenyamanan, lalu jahit sisi luar selimut."""
         self.show_tutorial(title, content)
 
-    def on_exit(self):
-        self.destroy()
+    def go_back(self):
+        """Closes the current window and opens the DonationPage."""
+        self.destroy()  # Close this window
+        DonationPage(self.username, self.account_type)  # Open the DonationPage window
 
 if __name__ == "__main__":
-    app = BajuKitaApp()
+    app = MenuDaurUlang("Seller1", "seller")  # Example values for username and account_type
     app.mainloop()
