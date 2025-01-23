@@ -65,9 +65,6 @@ class profile(tk.Tk):
         self.settings_button = tk.Button(self, text="Settings", font=("Arial", 12), bg="#4caf50", fg="white", command=self.settings)
         self.settings_button.place(x=400, y=20)
         
-        self.homepage_button = tk.Button(self, text="Homepage", font=("Arial", 12), bg="#4caf50", fg="white", command=self.homepage)
-        self.homepage_button.pack(pady=10)
-        
         self.nav_bar = tk.Frame(self, bg="#00796b", height=50)
         self.nav_bar.pack(side=tk.BOTTOM, fill=tk.X)
         
@@ -109,13 +106,13 @@ class profile(tk.Tk):
     
     def riwayat(self):
         self.withdraw() 
-        pesanan_window = Riwayat_belanja.riwayat(self.username)  
+        pesanan_window = Riwayat_belanja.riwayat(self.username, self.account_type)  
         pesanan_window.protocol("WM_DELETE_WINDOW", self.on_window_close)
         pesanan_window.mainloop()
     
     def pesanan(self):
         self.withdraw() 
-        pesanan_window = Pesanan.pesanan(self.username)  
+        pesanan_window = Pesanan.pesanan(self.username, self.account_type)  
         pesanan_window.protocol("WM_DELETE_WINDOW", self.on_window_close)
         pesanan_window.mainloop()
     
@@ -147,10 +144,6 @@ class profile(tk.Tk):
     def update_profile_info(self):
         main_address = self.user_info['alamat'][0] if self.user_info['alamat'] else "Tidak ada alamat diset"
         self.alamat_label.config(text=f"Alamat Utama: {main_address}")
-    
-    def homepage(self):
-        self.destroy()
-        Homepage.Homepage(self.username, self.account_type).mainloop()
     
     def ensure_file_exists(self):
         if not os.path.exists(posts_file):

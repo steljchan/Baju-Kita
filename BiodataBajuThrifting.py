@@ -1,10 +1,10 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from AIFiturDonation import AI_Donation
 
 
 class BiodataBajuThrifting(tk.Tk):
-    def __init__(self):
+    def __init__(self, callback=None):
+        self.callback = callback
         super().__init__()
         self.title("BajuKita")
         self.geometry("500x600")
@@ -77,11 +77,9 @@ class BiodataBajuThrifting(tk.Tk):
 
         # Show a confirmation message
         messagebox.showinfo("Submission Successful", "Your data has been submitted!")
-
-        # Transition to AI Scan Fitur
-        self.destroy()  # Close the current form
-        ai_scan_app = AI_Donation()
-        ai_scan_app.mainloop()
+        if self.callback:
+            self.callback()
+        self.destroy()
 
     def clear_frame(self):
         for widget in self.main_frame.winfo_children():

@@ -11,7 +11,7 @@ riwayat_file = "riwayat.txt"
 user_data = {}
 
 class pesanan(tk.Tk):
-    def __init__(self, username, account_type=None):
+    def __init__(self, username, account_type):
         tk.Tk.__init__(self)
         self.title("Status Pesanan")
         self.geometry("600x400")

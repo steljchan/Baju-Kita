@@ -9,7 +9,7 @@ user_data_file = "user_data.txt"
 user_data = {}
 
 class riwayat(tk.Toplevel):
-    def __init__(self, username, account_type=None):
+    def __init__(self, username, account_type):
         super().__init__()
         self.title("Riwayat Pesanan")
         self.geometry("500x400")
